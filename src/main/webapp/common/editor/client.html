@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <script src="http://cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script>
+
+    <script>
+        var websocket = new WebSocket("ws://192.168.0.159:8081/websocketDemo")
+        websocket.onopen = function () {
+            console.log("open");
+            $(document.body).append("连接成功");
+        }
+
+        websocket.onmessage = function (data) {
+            console.log("收到消息" + JSON.stringify(data.data));
+            $(document.body).html(data.data);
+        }
+        websocket.onerror = function(e)
+        {
+            $(document.body).append("错误"+JSON.stringify(e));
+        }
+    </script>
+</head>
+<body>
+
+</body>

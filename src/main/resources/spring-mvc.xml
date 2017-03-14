@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:websocket="http://www.springframework.org/schema/websocket"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+    	http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-4.2.xsd
+        http://www.springframework.org/schema/mvc 
+        http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd
+		http://www.springframework.org/schema/websocket
+        http://www.springframework.org/schema/websocket/spring-websocket-4.2.xsd">                    
+ 
+	<!-- 扫描controller自动注入为bean -->
+	<context:component-scan base-package="org.bear.bookstore.web" />
+	
+	<!--
+		此标签会注入DefaultServletHttpRequestHandler对象
+		以下是处理请求的方式，获取容器的RequestDispatcher，进行请求转发
+		RequestDispatcher rd = this.servletContext.getNamedDispatcher(this.defaultServletName);
+		if (rd == null) {
+			throw new IllegalStateException("A RequestDispatcher could not be located for the default servlet '" +
+					this.defaultServletName + "'");
+		}
+		rd.forward(request, response);
+		
+		当然，如果dispatcherServlet配置拦截路径为/*时，springmvc会拦截所有的请求，*.jsp/*.css/*.do等
+		这个时候如果没有配置default-servlet-handler，则jsp和css会出现404，配置了jsp会显示源码   因此dispatcherServlet拦截路径不能配置成/*
+		
+		如果dispatcherServlet配置拦截路径为/时，则不会拦截*.jsp，jsp交由tomcat的default的servlet处理
+	 -->
+    <mvc:default-servlet-handler default-servlet-name="default"/>
+    
+    <!-- 
+		静态资源缓存，注册一个SimpleUrlHandlerMapping和ResourceHttpRequestHandler来处理
+		和mvc:default-servlet-handler
+	 -->
+	<mvc:resources mapping="/resources/**" location="/common/">
+	    <mvc:cache-control max-age="3600" cache-public="true"/>
+	</mvc:resources>
+    
+    <!-- 
+    	当dispatcherServlet配置的拦截路径为/*时，访问跟路径是会重定向到index.jsp 
+    	如果web.xml中配置了
+		<welcome-file-list>
+			<welcome-file>index.jsp</welcome-file>
+			<welcome-file>index1.jsp</welcome-file>
+		</welcome-file-list>
+		则会先访问index.jsp，然后index1.jsp，如果访问不到则出现404
+		
+		也就是如果说对于访问跟路径来说，配置了welcome-file-list，则下面配置毫无意义
+     -->
+    <mvc:view-controller path="/" view-name="redirect:index.jsp"/>
+ 
+ 	
+    <!-- if you use annotation you must configure following setting -->
+    <mvc:annotation-driven enable-matrix-variables="true">
+    	<!-- <mvc:async-support ></mvc:async-support> -->
+    	<!-- 
+    		在这个地方和在RequestMappingHandlerAdapter中配置的区别是什么
+    		为什么在这配置有用在RequestMappingHandlerAdapter中配置没用,
+    		在下面配置的RequestMappingHandlerAdapter解释
+    	 -->
+    	<mvc:message-converters>
+    		<bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+				<property name="objectMapper">
+					<bean class="com.fasterxml.jackson.databind.ObjectMapper">
+						<property name="dateFormat">
+					   		<bean class="java.text.SimpleDateFormat">
+					   			<constructor-arg type="java.lang.String" value="yyyy-MM-dd HH:mm:ss"/>
+					   		</bean>
+						</property>
+					</bean>
+	     		</property>
+			</bean>
+    	</mvc:message-converters>
+    	<!-- 
+    		默认值 
+	    	RequestMappingInfo.BuilderConfiguration
+				private boolean suffixPatternMatch = true;
+	    		private boolean trailingSlashMatch = true;
+				private boolean registeredSuffixPatternMatch = false;
+			
+			AbstractHandlerMapping
+				private UrlPathHelper urlPathHelper = new UrlPathHelper();
+				private PathMatcher pathMatcher = new AntPathMatcher();
+    	 -->
+    	<mvc:path-matching
+	        suffix-pattern="true"
+	        trailing-slash="true"
+	        registered-suffixes-only="false"/>
+    </mvc:annotation-driven>
+     
+   
+	<!-- 
+		通过标志位detectAllViewResolvers判断是否需要检索所有的viewResolver，如果为true，
+		则一下配置的id并无实际意义，可以不进行配置 
+		List<ViewResolver> org.springframework.web.servlet.DispatcherServlet.viewResolvers 
+		spring mvc默认使用org.springframework.web.servlet.view.InternalResourceViewResolver
+	 -->
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/" />
+        <property name="suffix" value=".jsp" />
+        <property name="order" value="10"/>
+    </bean>
+        
+    <!--   stomp and message broker config  start -->  
+    <websocket:message-broker application-destination-prefix="/app">  
+        <websocket:transport send-timeout="15000" send-buffer-size="524288" message-size="131072" />
+        <!-- websocket 底层连接地址 -->  
+        <websocket:stomp-endpoint path="/chatdemo" >  
+        	<websocket:handshake-interceptors>
+				<bean class="org.bear.bookstore.web.ws.HandshakeInterceptor"></bean>
+        	</websocket:handshake-interceptors>
+            <websocket:sockjs/> 
+        </websocket:stomp-endpoint>  
+        <!-- 
+        	<websocket:simple-broker prefix="/topic,/queue" />
+        	
+        	system-login="system" system-passcode="manager" 
+			client-login="system" client-passcode="manager"
+         -->
+        <websocket:stomp-broker-relay 
+        	prefix="/topic,/queue"
+			relay-host="127.0.0.1" relay-port="61613" 
+			heartbeat-send-interval="1000" heartbeat-receive-interval="1000"/>
+        <websocket:client-inbound-channel>
+        	<websocket:executor core-pool-size="4" max-pool-size="8" keep-alive-seconds="60" queue-capacity="100"/>
+        </websocket:client-inbound-channel>
+        <websocket:client-outbound-channel>
+        	<websocket:executor core-pool-size="4" max-pool-size="8" keep-alive-seconds="60" queue-capacity="100"/>
+        </websocket:client-outbound-channel>
+    </websocket:message-broker>  
+    <!--   stomp and message broker config  end--> 
+</beans>

@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>完整demo</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <script type="text/javascript" charset="utf-8" src="resources/utf8-jsp/ueditor.config.js"></script>
+    <script type="text/javascript" charset="utf-8" src="resources/utf8-jsp/ueditor.all.min.js"> </script>
+    <!--建议手动加在语言，避免在ie下有时因为加载语言失败导致编辑器加载失败-->
+    <!--这里加载的语言文件会覆盖你在配置项目里添加的语言类型，比如你在配置项目里配置的是英文，这里加载的中文，那最后就是中文-->
+    <script type="text/javascript" charset="utf-8" src="resources/utf8-jsp/lang/zh-cn/zh-cn.js"></script>
+    
+    <script type="text/javascript" src="resources/jquery/jquery.min.1.11.2.js"></script>
+	<script type="text/javascript" src="resources/sockjs-client/sockjs.min.1.1.1.js"></script>
+	<script type="text/javascript" src="resources/stomp/stomp.min.js"></script>
+	<script type="text/javascript">
+	$(function(){
+		//实例化编辑器
+	    //建议使用工厂方法getEditor创建和引用编辑器实例，如果在某个闭包下引用该编辑器，直接调用UE.getEditor('editor')就能拿到相关的实例
+	    var ue = UE.getEditor('editor');
+		
+	});
+	</script>
+    <style type="text/css">
+        .left{
+            float: left;
+        }
+        .right{
+            float: right;
+        }
+        .sp{
+        	width: 50%;
+        	height: 500px;
+        	text-align: center;
+        	border: 1px solid #aaa;
+        	line-height: 500px;
+        	margin: auto;
+        	display: inline-block;
+        }
+        .list{
+        	width:300px;
+        	border: 1px solid #aaa;
+        	height: 500px;
+        }
+        .zhubo{
+        	width: 100%;
+        	height: 40px;
+        	text-align: center;
+        	border: 1px solid #aaa;
+        	line-height: 40px;
+        }
+        
+        #chat{
+        	width: 100%;
+        	height: 400px;
+        	border: 1px solid #aaa;
+        	float: right;
+        }
+    </style>
+</head>
+<body>
+	<h2>欢迎来到XXX直播平台</h2>
+	<div>
+		<div class="list left">
+			<h4 style="text-align: center;">主播列表</h4>
+			<p class="zhubo">主播1</p>
+			<p class="zhubo">主播2</p>
+			<p class="zhubo">主播3</p>
+			<p class="zhubo">主播4</p>
+			<p class="zhubo">主播5</p>
+			<p class="zhubo">主播6</p>
+			<p class="zhubo">主播7</p>
+			<p class="zhubo"><a>下一页</a></p>
+		</div>
+		
+		<div class="sp">
+			XXX直播间
+		</div>
+		
+		<div class="right">
+			<div>聊天室</div>
+			<div id="chat"></div>
+			<div><script id="editor" type="text/plain" style="width:450px;height:100px;"></script></div>
+		</div>
+	</div>
+</body>
+</html>

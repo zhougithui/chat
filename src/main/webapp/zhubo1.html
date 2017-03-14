@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script type="text/javascript" src="resources/jquery/jquery.min.1.11.2.js"></script>
+<script type="text/javascript" src="resources/sockjs-client/sockjs.min.1.1.1.js"></script>
+<script type="text/javascript" src="resources/stomp/stomp.min.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+var sock = new SockJS("/chat/chatdemo");  
+var stomp = Stomp.over(sock);  
+
+stomp.connect('guest', 'guest', function(frame) {  
+    console.log('*****  Connected  *****');  
+    stomp.subscribe("/topic/zhubo1", handlePolo);  
+});  
+
+function handleOneTime(message) {  
+    console.log('Received: ', message);  
+}  
+
+function handlePolo(message) {  
+    console.log('Received: ', message);  
+    $('#output').append("<b>" +  
+            JSON.parse(message.body).message + "</b><br/>")  
+}  
+
+function handleErrors(message) {  
+    console.log('RECEIVED ERROR: ', message);  
+    $('#output').append("<b>GOT AN ERROR!!!: " +  
+            JSON.parse(message.body).message + "</b><br/>")  
+}  
+
+function doSend(msg) {  
+    console.log('Sending ' + msg + '!');  
+    stomp.send("/app/zhubo1", {},  
+            JSON.stringify({ 'message': new Date().toLocaleString() + '：<br/>' + msg }));  
+}  
+
+$(function(){
+	$('#stop').click(function() {sock.close()}); 
+});
+
+</script>  
+<h2>zhu bo 1</h2>
+<input id="msg" type="text" /><button onclick="doSend($('#msg').val());">发送 </button> 
+<button id="stop">Stop</button>
+<div id="output"></div>
+
+</body>
+</html>

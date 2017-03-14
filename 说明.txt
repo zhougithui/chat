@@ -1,0 +1,12 @@
+1、安装activemq，修改/conf/activemq.xml文件，找到transportConnectors标签就行修改，位于<broker>标签中
+	<transportConnectors>
+        <transportConnector name="openwire" uri="tcp://0.0.0.0:61616"/>
+		<transportConnector name="stomp" uri="stomp://localhost:61613"/>
+    </transportConnectors>
+2、启动mq
+3、eclipse中导入maven项目chat
+4、部署项目到tomcat启动
+5、打开浏览器，
+	打开多个窗口访问http://localhost/chat/zhubo1.html，相当于这几个人进入主播1的房间
+	打开多个窗口访问http://localhost/chat/zhubo2.html，相当于这几个人进入主播2的房间
+	可以输入内容点击发送，进行实时互动
